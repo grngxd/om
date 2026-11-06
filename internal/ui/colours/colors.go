@@ -17,3 +17,15 @@ func Red(s string) string {
 func Faint(s string) string {
 	return color.New(color.Faint).SprintFunc()(s)
 }
+
+func Bold(s string) string {
+	return color.New(color.Bold).SprintFunc()(s)
+}
+
+func Builder(s string, colours ...color.Attribute) string {
+	for _, c := range colours {
+		s = color.New(c).SprintFunc()(s)
+	}
+
+	return color.New(colours[len(colours)-1]).SprintFunc()(s)
+}
