@@ -2,11 +2,13 @@ package logger
 
 import (
 	"fmt"
-	"om/internal/lib/colours"
+	"om/internal/ui/colours"
+
+	"github.com/fatih/color"
 )
 
 func Logf(msg string, args ...any) {
-	fmt.Printf(colours.Faint("[om] ")+msg, args...)
+	fmt.Printf(colours.Builder("[om] ", color.Faint, color.Bold)+msg, args...)
 }
 
 func Log(msg string) {
@@ -14,7 +16,7 @@ func Log(msg string) {
 }
 
 func Successf(msg string, args ...any) {
-	fmt.Printf(colours.Green("[om] ")+"success: "+msg, args...)
+	fmt.Printf(colours.Builder("[om] ", color.FgGreen, color.Bold)+"success: "+msg, args...)
 }
 
 func Success(msg string) {
@@ -22,7 +24,7 @@ func Success(msg string) {
 }
 
 func Warnf(msg string, args ...any) {
-	fmt.Printf(colours.Yellow("[om] ")+"warning: "+msg, args...)
+	fmt.Printf(colours.Builder("[om] ", color.FgYellow, color.Bold)+"warning: "+msg, args...)
 }
 
 func Warn(msg string) {
@@ -30,7 +32,7 @@ func Warn(msg string) {
 }
 
 func Errorf(msg string, args ...any) {
-	fmt.Printf(colours.Red("[om] ")+"error: "+msg, args...)
+	fmt.Printf(colours.Builder("[om] ", color.FgRed, color.Bold)+"error: "+msg, args...)
 }
 
 func Error(msg string) {
