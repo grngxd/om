@@ -1,45 +1,56 @@
 package commands
 
 import (
+	"fmt"
 	"om/internal/containers"
 	"om/internal/lib/logger"
+	"om/internal/providers"
 	"om/internal/ui"
 )
 
 func Install(args ...string) {
 	if len(args) == 0 {
 		logger.Error("no package provided")
-		logger.Log("usage: om install [distro?] <pkg>")
+		logger.Log("usage: om install [container] <pkg>")
 		return
 	}
 
+	containerName := "arch" // TODO: infer containers or selection
 	pkg := args[0]
-	containerName := "arch"
 
-	// om i arch nvim
-	if len(args) == 2 {
+	if len(args) > 1 {
 		containerName = args[0]
 		pkg = args[1]
 	}
 
-	var container containers.Container
+	container, err := containers.Find(containerName)
+	if err != nil {
+		logger.Errorf("%v\n", err)
+		return
+	}
 
-	switch containerName {
-	case "arch":
-		container = containers.Arch{}
-	default:
-		logger.Errorf("unrecognised container: %s\n", containerName)
+	providerName, err := providers.Detect(container)
+	if err != nil {
+		logger.Errorf("%v\n", err)
+		return
+	}
+
+	provider, err := providers.Get(providerName)
+	if err != nil {
+		logger.Errorf("%v\n", err)
 		return
 	}
 
 	ui.PrintBanner()
+	logger.Logf("installing \"%s\" using %s\n", pkg, provider.Name())
+	fmt.Println()
 
-	logger.Logf("installing \"%s\"\n", pkg)
-
-	if err := container.Install(pkg); err != nil {
+	if err := provider.Install(container, pkg); err != nil {
+		fmt.Println()
 		logger.Errorf("failed to install package: %v\n", err)
 		return
 	}
 
-	logger.Logf("installed \"%s\"\n", pkg)
+	fmt.Println()
+	logger.Successf("installed \"%s\"\n", pkg)
 }

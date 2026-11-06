@@ -11,20 +11,16 @@ func Run(args ...string) {
 		return
 	}
 
-	// container := containers.Arch{}
-	containerName := "arch"
+	containerName := "arch" // TODO: actual real inference
+
 	if len(args) > 1 {
 		containerName = args[0]
 		args = args[1:]
 	}
 
-	var container containers.Container
-
-	switch containerName {
-	case "arch":
-		container = containers.Arch{}
-	default:
-		logger.Errorf("unsupported container: %s\n", containerName)
+	container, err := containers.Find(containerName)
+	if err != nil {
+		logger.Errorf("%v\n", err)
 		return
 	}
 

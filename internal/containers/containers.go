@@ -1,8 +1,13 @@
 package containers
 
-type Container interface {
-	Name() string
-	Install(pkg string) error
-	Run(args ...string) error
-	Ensure() error
+type Container struct {
+	Name  string
+	Image string
+}
+
+func New(name, image string) Container {
+	return Container{
+		Name:  name,
+		Image: image,
+	}
 }
