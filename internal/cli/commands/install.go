@@ -9,6 +9,7 @@ import (
 func Install(args ...string) {
 	if len(args) == 0 {
 		logger.Error("no package provided")
+		logger.Log("usage: om install [distro?] <pkg>")
 		return
 	}
 
@@ -27,7 +28,7 @@ func Install(args ...string) {
 	case "arch":
 		container = containers.Arch{}
 	default:
-		logger.Errorf("unsupported container: %s\n", containerName)
+		logger.Errorf("unrecognised container: %s\n", containerName)
 		return
 	}
 
