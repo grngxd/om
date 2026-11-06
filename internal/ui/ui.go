@@ -12,7 +12,8 @@ func PrintBanner() {
 ██████████
   ██  ██
 ██      ██
-██      ██`, "\n")
+██      ██
+`, "\n")
 
 	fmt.Printf("\n%s om %s\n\n", avatar, constants.Version)
 }

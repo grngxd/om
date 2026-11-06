@@ -6,8 +6,8 @@ import (
 )
 
 func Execute() {
-	if len(os.Args) < 2 {
-		commands.Usage()
+	if len(os.Args) < 2 || os.Args[1] == "help" {
+		commands.Usage(false, os.Args[1:]...)
 		return
 	}
 
@@ -19,6 +19,6 @@ func Execute() {
 	case "version", "v":
 		commands.Version()
 	default:
-		commands.Usage()
+		commands.Usage(true, os.Args[1:]...)
 	}
 }
