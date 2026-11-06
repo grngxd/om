@@ -2,7 +2,7 @@ package commands
 
 import (
 	"om/internal/containers"
-	"om/internal/logger"
+	"om/internal/lib/logger"
 	"om/internal/ui"
 )
 
