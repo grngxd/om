@@ -2,7 +2,7 @@ package commands
 
 import (
 	"om/internal/containers"
-	"om/internal/logger"
+	"om/internal/lib/logger"
 )
 
 func Run(args ...string) {

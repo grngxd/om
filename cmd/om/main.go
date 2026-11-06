@@ -2,7 +2,7 @@
 
 // import (
 // 	"fmt"
-// 	"om/internal/logger"
+// 	"om/internal/lib/logger"
 // 	"os"
 // 	"strings"
 // )

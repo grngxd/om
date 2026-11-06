@@ -1,3 +1,5 @@
 package constants
 
-var Version = "0.0.1 [a]"
+var SemanticVersion = "0.0.1"
+var BuildNumber = "[a]"
+var Version = SemanticVersion + "+" + BuildNumber

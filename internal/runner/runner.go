@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"om/internal/logger"
+	"om/internal/lib/logger"
 	"os"
 	"os/exec"
 )

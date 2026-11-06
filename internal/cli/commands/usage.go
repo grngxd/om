@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"om/internal/logger"
+	"om/internal/lib/logger"
 	"om/internal/ui"
 )
 

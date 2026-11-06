@@ -1,4 +1,5 @@
 # omnia
 (om) the package manager for package managers
 
-![om](./assets/example.png)
+![omnia](./assets/omnia.png)
+![omnia](./assets/example.png)
