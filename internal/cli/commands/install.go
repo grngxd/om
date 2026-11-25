@@ -51,6 +51,9 @@ func Install(args ...string) {
 		return
 	}
 
+	container.Start()
+	container.StopSilently()
+
 	fmt.Println()
 	logger.Successf("installed \"%s\"\n", pkg)
 }

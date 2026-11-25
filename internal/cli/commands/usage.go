@@ -13,9 +13,16 @@ func Usage(unrecognisedCommand bool, args ...string) {
 		logger.Logf("unrecognised command: \"%s\"\n", args[0])
 	}
 
-	logger.Log("usage:")
-	fmt.Println(" om create <name> <image:version>")
-	fmt.Println(" om install [distro?] <pkg>")
-	fmt.Println(" om run [distro?] <cmd>")
-	fmt.Println(" om version")
+	logger.Log("usage:\n")
+	fmt.Println(" containers:")
+	fmt.Println("   om create <name> <image:version>")
+	fmt.Println("   om remove <name>")
+	fmt.Println("   om doctor <name>\n")
+
+	fmt.Println(" packages:")
+	fmt.Println("   om install [distro?] <pkg>")
+	fmt.Println("   om run [distro?] <cmd>\n")
+
+	fmt.Println(" miscellaneous:")
+	fmt.Println("   om version")
 }

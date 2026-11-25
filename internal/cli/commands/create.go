@@ -26,5 +26,10 @@ func Create(args ...string) {
 		return
 	}
 
+	if err := container.Init(); err != nil {
+		logger.Errorf("failed to initialise container: %v", err)
+		return
+	}
+
 	logger.Successf("created container \"%s\"\n", name)
 }

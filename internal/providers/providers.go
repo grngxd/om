@@ -10,6 +10,15 @@ type Provider interface {
 	Install(container containers.Container, packages ...string) error
 }
 
+func Find(c containers.Container) (Provider, error) {
+	provider, err := Detect(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return Get(provider)
+}
+
 func Get(provider string) (Provider, error) {
 	switch provider {
 	case "pacman":

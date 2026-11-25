@@ -2,6 +2,8 @@ package containers
 
 import (
 	"fmt"
+	"om/internal/lib/logger"
+	"om/internal/ui"
 	"os"
 	"os/exec"
 	"strings"
@@ -31,6 +33,16 @@ func (c Container) Exists() (bool, error) {
 	return false, nil
 }
 
+func (c Container) Running() bool {
+	cmd := exec.Command("podman", "inspect", "-f", "{{.State.Running}}", c.Name)
+	output, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+
+	return strings.TrimSpace(string(output)) == "true"
+}
+
 func (c Container) create() error {
 	cmd := exec.Command(
 		"distrobox-create",
@@ -58,10 +70,26 @@ func (c Container) Create() error {
 	}
 
 	if exists {
-		return fmt.Errorf("container %q already exists", c.Name)
+		return fmt.Errorf("container %q already exists\n", c.Name)
 	}
 
 	return c.create()
+}
+
+func (c Container) Remove() error {
+	cmd := exec.Command("distrobox-rm", c.Name)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return fmt.Errorf(
+			"failed to remove container %q: %w\n%s",
+			c.Name,
+			err,
+			strings.TrimSpace(string(output)),
+		)
+	}
+
+	return nil
 }
 
 func (c Container) Ensure() error {
@@ -77,8 +105,76 @@ func (c Container) Ensure() error {
 	return c.create()
 }
 
+func (c Container) Init() error {
+	ui.PrintBanner()
+	logger.Logf("initialising container \"%q\"\n", c.Name)
+
+	return c.InitSilently()
+}
+
+func (c Container) InitSilently() error {
+	if err := c.StartSilently(); err != nil {
+		return err
+	}
+
+	if err := c.StopSilently(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Container) Start() error {
+	ui.PrintBanner()
+	logger.Logf("starting container %q\n", c.Name)
+	return c.StartSilently()
+}
+
+func (c Container) StartSilently() error {
+	cmd := exec.Command("podman", "start", c.Name)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return fmt.Errorf(
+			"failed to start container %q: %w\n%s",
+			c.Name,
+			err,
+			strings.TrimSpace(string(output)),
+		)
+	}
+
+	return nil
+}
+
+func (c Container) Stop() error {
+	ui.PrintBanner()
+	logger.Logf("stopping container %q\n", c.Name)
+
+	return c.StopSilently()
+}
+
+func (c Container) StopSilently() error {
+	cmd := exec.Command("podman", "stop", c.Name)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return fmt.Errorf(
+			"failed to stop container %q: %w\n%s",
+			c.Name,
+			err,
+			strings.TrimSpace(string(output)),
+		)
+	}
+
+	return nil
+}
+
 func (c Container) Run(args ...string) error {
 	if err := c.Ensure(); err != nil {
+		return err
+	}
+
+	if err := c.StartSilently(); err != nil {
 		return err
 	}
 

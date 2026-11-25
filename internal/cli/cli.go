@@ -12,15 +12,31 @@ func Execute() {
 	}
 
 	switch os.Args[1] {
-	case "install", "i":
-		commands.Install(os.Args[2:]...)
-	case "run":
-		commands.Run(os.Args[2:]...)
+	// misc
 	case "version", "v":
 		commands.Version()
-	case "create":
+
+	// containers
+	case "create", "c":
 		commands.Create(os.Args[2:]...)
+	case "remove", "rm":
+		commands.Remove(os.Args[2:]...)
+	case "doctor", "doc":
+		commands.Doctor(os.Args[2:]...)
+
+	// packages
+	case "install", "i":
+		commands.Install(os.Args[2:]...)
+	// case "uninstall", "un":
+	// 	commands.Uninstall(os.Args[2:]...)
+
+	case "run":
+		commands.Run(os.Args[2:]...)
 	default:
-		commands.Usage(true, os.Args[1:]...)
+		if len(os.Args) == 1 {
+			commands.Usage(true, os.Args[1:]...)
+		}
+
+		commands.Run(os.Args[1:]...)
 	}
 }
