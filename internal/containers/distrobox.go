@@ -9,6 +9,36 @@ import (
 	"strings"
 )
 
+func List() ([]Container, error) {
+	cmd := exec.Command("distrobox-list")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var containers []Container
+
+	for _, line := range strings.Split(string(output), "\n")[1:] {
+		columns := strings.Split(line, "|")
+
+		if len(columns) < 4 {
+			continue
+		}
+
+		name := strings.TrimSpace(columns[1])
+		image := strings.TrimSpace(columns[3])
+
+		container := New(name, image)
+		if err := container.Ensure(); err != nil {
+			return nil, fmt.Errorf("container does not exist %q: %w", name, err)
+		}
+
+		containers = append(containers, container)
+	}
+
+	return containers, nil
+}
+
 func (c Container) Exists() (bool, error) {
 	cmd := exec.Command("distrobox-list")
 	output, err := cmd.Output()
@@ -80,17 +110,6 @@ func (c Container) Status() (ContainerStatus, error) {
 	}
 
 	return status, nil
-}
-
-// deprecated: use Status() instead
-func (c Container) Running() (bool, error) {
-	cmd := exec.Command("podman", "inspect", "-f", "{{.State.Running}}", c.Name)
-	output, err := cmd.Output()
-	if err != nil {
-		return false, err
-	}
-
-	return strings.TrimSpace(string(output)) == "true", nil
 }
 
 func (c Container) create() error {

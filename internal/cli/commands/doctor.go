@@ -36,11 +36,6 @@ func Doctor(args ...string) {
 		return
 	}
 
-	if err != nil {
-		logger.Errorf("failed to check container status: %v\n", err)
-		return
-	}
-
 	logger.Log("container found, checking if it is running...")
 	if !status.Running {
 		logger.Log("container is not running, starting it...")
@@ -57,8 +52,6 @@ func Doctor(args ...string) {
 			if err := container.StopSilently(); err != nil {
 				logger.Errorf("failed to restore container state: %v\n", err)
 			}
-
-			logger.Success("diagnosis complete")
 		}()
 	}
 
@@ -81,8 +74,5 @@ func Doctor(args ...string) {
 	}
 
 	logger.Successf("detected package manager: %s\n\n", provider.Name())
-
-	if status.Running {
-		logger.Success("diagnosis complete")
-	}
+	logger.Success("diagnosis complete")
 }

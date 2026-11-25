@@ -17,6 +17,8 @@ func Execute() {
 		commands.Version()
 
 	// containers
+	case "list", "ls":
+		commands.List(os.Args[2:]...)
 	case "create", "c":
 		commands.Create(os.Args[2:]...)
 	case "remove", "rm":
