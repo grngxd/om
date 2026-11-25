@@ -25,14 +25,24 @@ func Doctor(args ...string) {
 
 	container, err := containers.Find(args[0])
 	if err != nil {
-		logger.Errorf("failed to find the container, are you sure it exists? %v\n", err)
+		logger.Errorf("failed to find the container, are you sure it exists?\n")
 		return
 	}
 
-	wasRunning := container.Running()
+	// wasRunning, err := container.Running()
+	status, err := container.Status()
+	if err != nil {
+		logger.Errorf("failed to check container status: %v\n", err)
+		return
+	}
+
+	if err != nil {
+		logger.Errorf("failed to check container status: %v\n", err)
+		return
+	}
 
 	logger.Log("container found, checking if it is running...")
-	if !wasRunning {
+	if !status.Running {
 		logger.Log("container is not running, starting it...")
 		if err := container.StartSilently(); err != nil {
 			logger.Errorf("failed to start the container: %v\n", err)
@@ -40,11 +50,19 @@ func Doctor(args ...string) {
 		}
 	}
 
-	logger.Log("container is running, proceeding with diagnosis...\n")
+	if !status.Running {
+		defer func() {
+			logger.Log("restoring original container state...")
 
-	// output, err := exec.Command(
-	// 	"podman", "inspect", container.Name, "--format", "{{.State.Status}}",
-	// )
+			if err := container.StopSilently(); err != nil {
+				logger.Errorf("failed to restore container state: %v\n", err)
+			}
+
+			logger.Success("diagnosis complete")
+		}()
+	}
+
+	logger.Log("container is running, proceeding with diagnosis...\n")
 
 	_, err = container.Output("true")
 	if err != nil {
@@ -64,14 +82,7 @@ func Doctor(args ...string) {
 
 	logger.Successf("detected package manager: %s\n\n", provider.Name())
 
-	if !wasRunning {
-		logger.Log("restoring original container state...")
-
-		if err := container.StopSilently(); err != nil {
-			logger.Errorf("failed to stop container: %v\n", err)
-			return
-		}
+	if status.Running {
+		logger.Success("diagnosis complete")
 	}
-
-	logger.Log("diagnosis complete")
 }

@@ -33,14 +33,64 @@ func (c Container) Exists() (bool, error) {
 	return false, nil
 }
 
-func (c Container) Running() bool {
+type ContainerStatus struct {
+	Running    bool
+	Exited     bool
+	Created    bool
+	Configured bool
+	Paused     bool
+}
+
+func (c Container) Status() (ContainerStatus, error) {
+	cmd := exec.Command("podman", "inspect", "-f", "{{.State.Status}}", c.Name)
+	output, err := cmd.Output()
+	if err != nil {
+		return ContainerStatus{}, err
+	}
+
+	src := strings.TrimSpace(string(output))
+	status := ContainerStatus{}
+
+	switch src {
+	case "running":
+		status.Running = true
+	case "exited":
+		status.Exited = true
+	case "created":
+		status.Created = true
+	case "configured":
+		status.Configured = true
+	case "paused":
+		status.Paused = true
+	default:
+		logger.Warnf("unknown container status: %s\n", src)
+		return ContainerStatus{}, fmt.Errorf("unknown container status: %s", src)
+	}
+
+	statuses := []bool{status.Running, status.Exited, status.Created, status.Configured, status.Paused}
+	count := 0
+	for _, s := range statuses {
+		if s {
+			count++
+		}
+	}
+
+	if count != 1 {
+		logger.Errorf("container %q has multiple/no statuses set, this should not happen\n", c.Name)
+	}
+
+	return status, nil
+}
+
+// deprecated: use Status() instead
+func (c Container) Running() (bool, error) {
 	cmd := exec.Command("podman", "inspect", "-f", "{{.State.Running}}", c.Name)
 	output, err := cmd.Output()
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return strings.TrimSpace(string(output)) == "true"
+	return strings.TrimSpace(string(output)) == "true", nil
 }
 
 func (c Container) create() error {
