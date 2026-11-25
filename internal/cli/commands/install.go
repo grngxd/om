@@ -41,6 +41,27 @@ func Install(args ...string) {
 		return
 	}
 
+	status, err := container.Status()
+	if err != nil {
+		logger.Errorf("failed to get container status: %v\n", err)
+		return
+	}
+
+	if !status.Running {
+		if err := container.Start(); err != nil {
+			logger.Errorf("failed to start container: %v\n", err)
+			return
+		}
+	}
+
+	if !status.Running {
+		defer func() {
+			if err := container.Stop(); err != nil {
+				logger.Errorf("failed to stop container: %v\n", err)
+			}
+		}()
+	}
+
 	ui.PrintBanner()
 	logger.Logf("installing \"%s\" using %s\n", pkg, provider.Name())
 	fmt.Println()
@@ -50,9 +71,6 @@ func Install(args ...string) {
 		logger.Errorf("failed to install package: %v\n", err)
 		return
 	}
-
-	container.Start()
-	container.StopSilently()
 
 	fmt.Println()
 	logger.Successf("installed \"%s\"\n", pkg)

@@ -2,6 +2,7 @@ package containers
 
 import (
 	"fmt"
+	"io"
 	"om/internal/lib/logger"
 	"om/internal/ui"
 	"os"
@@ -243,6 +244,31 @@ func (c Container) Run(args ...string) error {
 		return err
 	}
 
+	if len(args) == 0 {
+		return fmt.Errorf("no command provided")
+	}
+
+	// _, err := c.Output(
+	// 	"sh", "-c",
+	// 	`command -v "$1" >/dev/null 2>&1`,
+	// 	"om", args[0],
+	// )
+
+	// faster to check if the command exists in the container by running it directly and checking for an error
+	_, err := c.Output(
+		"sh", "-c",
+		`"$@"`,
+		"om", args[0],
+	)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "command not found") {
+			return fmt.Errorf("command %q not found in container, check the command name or install the package", args[0])
+		}
+
+		return fmt.Errorf("failed to execute command in container: %w", err)
+	}
+
 	if err := c.StartSilently(); err != nil {
 		return err
 	}
@@ -254,9 +280,24 @@ func (c Container) Run(args ...string) error {
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 
-	return cmd.Run()
+	var stderr strings.Builder
+	cmd.Stderr = io.MultiWriter(os.Stderr, &stderr)
+
+	err = cmd.Run()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			return fmt.Errorf(
+				"command failed with exit code %d: %s",
+				exitErr.ExitCode(),
+				strings.TrimSpace(stderr.String()),
+			)
+		}
+
+		return fmt.Errorf("failed to execute command: %w", err)
+	}
+
+	return nil
 }
 
 func (c Container) Output(args ...string) (string, error) {
