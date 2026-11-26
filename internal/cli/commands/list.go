@@ -6,8 +6,6 @@ import (
 	"om/internal/lib/logger"
 	"om/internal/ui"
 	"om/internal/ui/colours"
-	"os/exec"
-	"strings"
 
 	"github.com/fatih/color"
 )
@@ -23,13 +21,13 @@ func List(args ...string) {
 
 	logger.Logf("finding containers...")
 
-	containers, err := containers.List()
+	cs, err := containers.List()
 	if err != nil {
 		logger.Errorf("failed to list containers: %v\n", err)
 		return
 	}
 
-	statuses, err := Statuses(containers)
+	statuses, err := containers.Statuses(cs)
 	if err != nil {
 		logger.Errorf("failed to get container statuses: %v\n", err)
 		return
@@ -37,14 +35,14 @@ func List(args ...string) {
 
 	fmt.Printf("\x1b[2K\r")
 
-	if len(containers) == 0 {
+	if len(cs) == 0 {
 		logger.Log("no containers found")
 		return
 	}
 
 	logger.Log("containers:")
 
-	for _, c := range containers {
+	for _, c := range cs {
 		fmt.Printf("  ")
 		status := statuses[c.Name]
 		switch status {
@@ -61,42 +59,4 @@ func List(args ...string) {
 		fmt.Printf("%s %s", c.Name, colours.Builder("("+c.Image+") - "+status, color.Faint))
 		fmt.Println()
 	}
-}
-
-func Statuses(containers []containers.Container) (map[string]string, error) {
-	if len(containers) == 0 {
-		return map[string]string{}, nil
-	}
-
-	args := []string{
-		"inspect",
-		"--format",
-		"{{.Name}}|{{.State.Status}}",
-	}
-
-	for _, c := range containers {
-		args = append(args, c.Name)
-	}
-
-	cmd := exec.Command("podman", args...)
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, err
-	}
-
-	statuses := make(map[string]string)
-
-	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
-		columns := strings.Split(line, "|")
-		if len(columns) != 2 {
-			continue
-		}
-
-		name := strings.TrimPrefix(strings.TrimSpace(columns[0]), "/")
-		status := strings.TrimSpace(columns[1])
-
-		statuses[name] = status
-	}
-
-	return statuses, nil
 }
